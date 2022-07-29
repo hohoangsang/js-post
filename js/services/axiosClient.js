@@ -7,4 +7,35 @@ const axiosClient = Axios.create({
   },
 })
 
+// Add a request interceptor
+axiosClient.interceptors.request.use(
+  function (config) {
+    const accessToken = localStorage.getItem('access_token')
+
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`
+    }
+
+    return config
+  },
+  function (error) {
+    return Promise.reject(error)
+  }
+)
+
+// Add a response interceptor
+axiosClient.interceptors.response.use(
+  function (response) {
+    return response.data
+  },
+  function (error) {
+    if (error.response.status === 401) {
+      window.location.assign('/login.hmtl')
+      return
+    }
+    console.log('axiosClient - response error', error)
+    return Promise.reject(error)
+  }
+)
+
 export default axiosClient
