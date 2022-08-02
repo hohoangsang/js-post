@@ -1,5 +1,9 @@
+import dayjs from 'dayjs'
 import postApi from './services/postApi'
 import { setTextContent } from './utils'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
 
 function renderPostList(postList) {
   if (!Array.isArray(postList) || postList.length === 0) return
@@ -23,23 +27,22 @@ function createPostItem(post) {
       .content.firstElementChild.cloneNode(true)
     if (!liElement) return
 
-    //Update title, description, author and thumbnail for each post
-
-    // const titleElement = liElement.querySelector('[data-id="title"]')
-    // if (titleElement) titleElement.textContent = post.title
-
-    // const descriptionElement = liElement.querySelector('[data-id="description"]')
-    // if (descriptionElement) descriptionElement.textContent = post.description
-
-    // const authorElement = liElement.querySelector('[data-id="author"]')
-    // if (authorElement) authorElement.textContent = post.auhtor
+    //Update title, description, author, thumbnail, timespan for each post
 
     setTextContent(liElement, '[data-id="title"]', post.title)
     setTextContent(liElement, '[data-id="description"]', post.description)
     setTextContent(liElement, '[data-id="author"]', post.author)
 
     const thumbnailElement = liElement.querySelector('[data-id="thumbnail"]')
-    if (thumbnailElement) thumbnailElement.src = post.imageUrl
+    if (thumbnailElement) {
+      thumbnailElement.src = post.imageUrl
+
+      thumbnailElement.addEventListener('error', () => {
+        thumbnailElement.src = 'https://via.placeholder.com/1368x400?text=Thumbnail'
+      })
+    }
+
+    setTextContent(liElement, '[data-id="timeSpan"]', ` - ${dayjs(post.updatedAt).fromNow()}`)
 
     return liElement
   } catch (error) {
