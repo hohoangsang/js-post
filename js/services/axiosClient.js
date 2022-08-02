@@ -33,7 +33,7 @@ axiosClient.interceptors.response.use(
       window.location.assign('/login.hmtl')
       return
     }
-    console.log('axiosClient - response error', error)
+
     return Promise.reject(error)
   }
 )
