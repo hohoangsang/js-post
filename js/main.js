@@ -1,17 +1,20 @@
 import dayjs from 'dayjs'
 import postApi from './services/postApi'
-import { setTextContent } from './utils'
+import { baseLimit, basePage, getUlPaginationElement, setTextContent } from './utils'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { baseLimit, basePage } from './utils/constance'
+import debounce from 'lodash.debounce'
 
 // to use fromNow func
 dayjs.extend(relativeTime)
 
 function renderPostList(postList) {
-  if (!Array.isArray(postList) || postList.length === 0) return
+  if (!Array.isArray(postList)) return
 
   const ulElement = document.getElementById('postList')
   if (!ulElement) return
+
+  //reset current list post
+  ulElement.textContent = ''
 
   postList.forEach((post, idx) => {
     const liElement = createPostItem(post)
@@ -48,63 +51,124 @@ function createPostItem(post) {
 }
 
 function handlePrevClick(e) {
-  e.preventDefault();
-  console.log("Prev click")
+  e.preventDefault()
+  console.log('Prev click')
+
+  const ulPagination = getUlPaginationElement()
+
+  const page = Number.parseInt(ulPagination.dataset.page) || 1
+
+  if (page > 1) handleFilterChange({ _page: page - 1 })
 }
 
 function handleNextClick(e) {
-  e.preventDefault();
-  console.log("Next click")
+  e.preventDefault()
+  console.log('Next click')
+
+  const ulPagination = getUlPaginationElement()
+
+  const page = Number.parseInt(ulPagination.dataset.page) || 1
+  const totalPages = Number.parseInt(ulPagination.dataset.totalPages)
+
+  if (page < totalPages) handleFilterChange({ _page: page + 1 })
 }
 
-function handleFilterChange(filterName, filterValue) {
-  const url = new URL(window.location);
-  url.searchParams.set(filterName, filterValue);
-  history.pushState({}, '', url)
+async function handleFilterChange(filterObj) {
+  if (!filterObj) return
 
-  //fetch API
-  //re-reder posts list
+  try {
+    const url = new URL(window.location)
+
+    Object.keys(filterObj).forEach((filterName) =>
+      url.searchParams.set(filterName, filterObj[filterName])
+    )
+
+    history.pushState({}, '', url)
+
+    //fetch API
+    //re-reder posts list
+    const queryParams = new URLSearchParams(window.location.search)
+    const { data, pagination } = await postApi.getAll(queryParams)
+
+    renderPostList(data)
+    renderPagination(pagination)
+  } catch (error) {
+    console.log('fail to render post list', error)
+  }
+}
+
+function renderPagination(pagination) {
+  const ulPagination = getUlPaginationElement()
+  if (!pagination || !ulPagination) return
+
+  const { _limit, _page, _totalRows } = pagination
+  const totalPages = Math.ceil(_totalRows / _limit)
+
+  ulPagination.dataset.page = _page
+  ulPagination.dataset.totalPages = totalPages
+
+  if (_page <= 1) ulPagination.firstElementChild?.firstElementChild.classList.add('disable-link')
+  else ulPagination.firstElementChild?.firstElementChild.classList.remove('disable-link')
+
+  if (_page >= totalPages)
+    ulPagination.lastElementChild?.firstElementChild.classList.add('disable-link')
+  else ulPagination.lastElementChild?.firstElementChild.classList.remove('disable-link')
 }
 
 function initPagination() {
-  const ulPagination = document.getElementById("pagination");
-  if (!ulPagination) return;
+  const ulPagination = getUlPaginationElement()
+  if (!ulPagination) return
 
-  const prevLink = ulPagination.firstElementChild?.firstElementChild;
-  const nextLink = ulPagination.lastElementChild?.firstElementChild;
-
-  const url = new URL(window.location);
+  const prevLink = ulPagination.firstElementChild?.firstElementChild
+  const nextLink = ulPagination.lastElementChild?.firstElementChild
 
   if (prevLink) {
-    if (Number(url.searchParams.get("_page")) === 1 || !url.searchParams.get("_page")) {
-      return prevLink.classList.add("disable-link")
-    }  
-    return prevLink.addEventListener("click", handlePrevClick)
+    prevLink.addEventListener('click', handlePrevClick)
   }
 
   if (nextLink) {
-    nextLink.addEventListener("click", handleNextClick)
+    nextLink.addEventListener('click', handleNextClick)
   }
-} 
+}
 
-function initURL() {
-  const url = new URL(window.location);
+function initSearch() {
+  const searchElement = document.getElementById('postSearch')
 
-  if (!url.searchParams.get("_page")) url.searchParams.set("_page", basePage);
-  if (!url.searchParams.get("_limit")) url.searchParams.set("_limit", baseLimit);
+  if (!searchElement) return
 
-  history.pushState({}, '', url)
+  // set default value of input search from query params
+  const searchParams = new URLSearchParams(window.location.search)
+
+  if (searchParams.get('title_like')) searchElement.value = searchParams.get('title_like')
+
+  const debounceSearch = debounce((event) => {
+    handleFilterChange({
+      title_like: event.target.value,
+      _page: 1,
+    })
+  }, 800)
+
+  searchElement.addEventListener('input', debounceSearch)
 }
 
 ;(async () => {
   try {
-    initPagination();
-    initURL();
+    //set default url
+    const url = new URL(window.location)
 
-    const queryParams = new URLSearchParams(window.location.search);
+    if (!url.searchParams.get('_page')) url.searchParams.set('_page', basePage)
+    if (!url.searchParams.get('_limit')) url.searchParams.set('_limit', baseLimit)
+
+    history.pushState({}, '', url)
+    const queryParams = url.searchParams
+
+    initPagination()
+    initSearch()
+
     const { data, pagination } = await postApi.getAll(queryParams)
 
     renderPostList(data)
+    renderPagination(pagination)
   } catch (error) {
     console.log('get all failed', error)
   }

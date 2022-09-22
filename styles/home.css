@@ -127,11 +127,26 @@
   -webkit-box-orient: vertical;
 }
 
-.posts-list {
-  margin-left: calc(-2rem - 12px);
-}
-
 .disable-link {
   pointer-events: none;
   background-color: lightgrey;
+}
+
+.input-group {
+  margin-left: auto;
+  width: 400px;
+}
+
+@media only screen and (max-width: 768px) {
+  .input-group {
+    margin: 0;
+    width: 300px;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .input-group {
+    margin: 0;
+    width: 200px;
+  }
 }

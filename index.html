@@ -177,8 +177,21 @@
         <div class="container">
           <h1 class="with-underline text-center">Latest posts</h1>
 
+          <!-- Posts search -->
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Search</span>
+            <input
+              type="text"
+              class="form-control"
+              id="postSearch"
+              placeholder="Enter post's name to search"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+          </div>
+
           <!-- Posts list -->
-          <ul id="postList" class="row posts-list"></ul>
+          <ul id="postList" class="row posts-list ps-0"></ul>
 
           <!-- Posts pagination -->
           <nav class="posts-nav" aria-label="Posts navigation">
