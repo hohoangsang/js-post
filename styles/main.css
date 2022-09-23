@@ -81,3 +81,8 @@ ul {
 .nav .nav__link > i {
   margin-right: 5px;
 }
+
+.disable-link {
+  pointer-events: none;
+  background-color: lightgrey;
+}

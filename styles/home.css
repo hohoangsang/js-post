@@ -107,7 +107,7 @@
 }
 
 .card {
-  /* display: flex; */
+  display: flex;
 }
 
 .card-img-top {
@@ -125,11 +125,6 @@
   -webkit-line-clamp: 3; /* number of lines to show */
           line-clamp: 3; 
   -webkit-box-orient: vertical;
-}
-
-.disable-link {
-  pointer-events: none;
-  background-color: lightgrey;
 }
 
 .input-group {
