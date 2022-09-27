@@ -19,15 +19,7 @@ export function renderPostList(elementId, postList) {
     //register event redirect to post-detail page - start
     liElement.dataset.postId = post.id
     liElement.addEventListener("click", () => {
-        const url = new URL(window.location);
-
-        url.pathname = "/post-detail.html"
-        url.search = ""
-        url.searchParams.set("id", post.id)
-
-        history.pushState({}, "", url);
-
-        window.location.reload();
+        window.location.assign(`/post-detail.html?id=${post.id}`);
     })
     //register event redirect to post-detail page - end
 

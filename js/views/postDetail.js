@@ -1,45 +1,40 @@
-import dayjs from 'dayjs';
+import dayjs from 'dayjs'
 import postApi from '../services/postApi'
+import { registerLightBox, setTextContent } from '../utils'
 
 function renderPostDetail(data) {
-    if (!data) return;
+  if (!data) return
 
-    //Update thumbnail
-    const thumbnailHero = document.getElementById("postHeroImage");
+  //Update thumbnail
+  const thumbnailHero = document.getElementById('postHeroImage')
 
-    if (thumbnailHero) {
-        thumbnailHero.style.backgroundImage = `url(${data?.imageUrl ||'https://via.placeholder.com/1368x400?text=Thumbnail'})`
-    }
+  if (thumbnailHero) {
+    thumbnailHero.style.backgroundImage = `url(${
+      data?.imageUrl || 'https://via.placeholder.com/1368x400?text=Thumbnail'
+    })`
 
-    //Update post title
-    const postTitle = document.getElementById("postDetailTitle");
-    if (postTitle) {
-        postTitle.textContent = data.title
-    }
+    thumbnailHero.addEventListener('error', () => {
+      thumbnailHero.style.backgroundImage =
+        "url('https://via.placeholder.com/1368x400?text=Thumbnail')"
+    })
+  }
 
-    //Update author
-    const author = document.getElementById("postDetailAuthor");
-    if (author) {
-        author.textContent = data.author 
-    }
+  // Update post title, author, time span, post's description
 
-    //Update time span
-    const timeSpan = document.getElementById("postDetailTimeSpan");
-    if (timeSpan) {
-        timeSpan.textContent = `- ${dayjs(data.updatedAt).format("hh:mm DD/MM/YYYY")}`
-    }
+  setTextContent(document, '#postDetailTitle', data.title)
+  setTextContent(document, '#postDetailAuthor', data.author)
+  setTextContent(
+    document,
+    '#postDetailTimeSpan',
+    `- ${dayjs(data.updatedAt).format('hh:mm DD/MM/YYYY')}`
+  )
+  setTextContent(document, '#postDetailDescription', data.description)
 
-    //Update post's description
-    const description = document.getElementById("postDetailDescription");
-    if (description) {
-        description.textContent = data.description 
-    }
-
-    //Update post's image
-    const postImage = document.querySelector(".post-image");
-    if (postImage) {
-        postImage.src = data.imageUrl || "https://via.placeholder.com/1368x400?text=Thumbnail";
-    }
+  const editLink = document.getElementById("goToEditPageLink");
+  if (editLink) {
+    editLink.href= `/add-edit-post.html?id=${data.id}`
+    editLink.innerHTML = '<i class="fas fa-edit"></i> Edit Post'
+  } 
 }
 
 ;(async () => {
@@ -48,11 +43,22 @@ function renderPostDetail(data) {
 
     const postId = url.searchParams.get('id')
 
-    const res = await postApi.getById(postId)
+    if (!postId) {
+      console.log('post not found')
+      return
+    }
 
-    renderPostDetail(res)
+    const post = await postApi.getById(postId)
 
+    renderPostDetail(post)
+
+    registerLightBox({
+      modalId: "lightbox",
+      imgSelector: "[data-img=lightboxImg]",
+      prevSelector: "[data-button=prevBtn]",
+      nextSelector: "[data-button=nextBtn]"
+    })
   } catch (error) {
-    console.log("Failed to get post by id: ", error)
+    console.log('Failed to get post by id: ', error)
   }
 })()
