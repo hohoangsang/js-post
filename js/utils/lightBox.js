@@ -12,6 +12,9 @@ export function registerLightBox({ modalId, imgSelector, prevSelector, nextSelec
 
   if (!modalElement) return
 
+  //check if modal is registerd
+  if (modalElement.dataset.registerd) return;
+
   //selector
   const imgElement = modalElement.querySelector(imgSelector)
   const prevButton = modalElement.querySelector(prevSelector)
@@ -53,25 +56,20 @@ export function registerLightBox({ modalId, imgSelector, prevSelector, nextSelec
     checkDisableButton()
 
     console.log({currentIndex})
-
-    prevButton.addEventListener('click', () => {
-      //handle click to show previour image
-      currentIndex--;
-      
-      console.log(currentIndex)
-      showImgAtIndex(currentIndex)
-     
-      checkDisableButton()
-    })
-
-    nextButton.addEventListener('click', () => {
-      //handle click to show next image
-      currentIndex++
-
-      console.log(currentIndex)
-      showImgAtIndex(currentIndex)
-
-      checkDisableButton()
-    })
   })
+
+  prevButton.addEventListener('click', () => {
+    currentIndex--;
+    showImgAtIndex(currentIndex)
+    checkDisableButton()
+  })
+
+  nextButton.addEventListener('click', () => {
+    currentIndex++;
+    showImgAtIndex(currentIndex)
+    checkDisableButton()
+  })
+
+  //mark this modal is already registerd
+  modalElement.dataset.registerd = "true"
 }
