@@ -16,12 +16,28 @@ export function renderPostList(elementId, postList) {
   postList.forEach((post, idx) => {
     const liElement = createPostItem(post)
 
-    //register event redirect to post-detail page - start
+    //register event redirect to post-detail page -- start
     liElement.dataset.postId = post.id
-    liElement.addEventListener("click", () => {
-        window.location.assign(`/post-detail.html?id=${post.id}`);
+    liElement.addEventListener("click", (event) => {
+      //S2: if event is triggered from menu --> ignore
+      const menu = liElement.querySelector('[data-id="menu"]')
+      if (menu && menu.contains(event.target)) return;
+
+      window.location.assign(`/post-detail.html?id=${post.id}`);
     })
-    //register event redirect to post-detail page - end
+    //register event redirect to post-detail page -- end
+
+    // register event redirect to edit post page -- start
+    const editBtn = liElement.querySelector('[data-id="edit"]')
+    
+    if (editBtn) {
+      editBtn.addEventListener("click", (event) => {
+        //S1: use propagation to ignore bubbling event
+        // event.stopPropagation();
+        window.location.assign(`/add-edit-post.html?id=${post.id}`)
+      })
+    }
+    // register event redirect to edit post page -- end
 
     ulElement.appendChild(liElement)
   })
