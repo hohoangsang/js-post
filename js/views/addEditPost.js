@@ -2,6 +2,8 @@ import postApi from "../services/postApi";
 import { renderPostForm } from "../utils";
 
 (async function () {
+    const postDetailTitle = document.getElementById("postDetailTitle");
+
     const url = new URL(window.location);
 
     const postId = url.searchParams.get("id");
@@ -14,13 +16,15 @@ import { renderPostForm } from "../utils";
     }
 
     if (postId) {
+        postDetailTitle.innerText = "Edit the post"
+
         const post = await postApi.getById(postId)
 
         initialValues = {
             ...initialValues,
             ...post
         }
-    }
+    } else postDetailTitle.innerText = "Add a post"
 
     const handleSubmitForm = (data) => {
         console.log(data)
