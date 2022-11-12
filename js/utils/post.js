@@ -32,7 +32,7 @@ export function renderPostList(elementId, postList) {
     
     if (editBtn) {
       editBtn.addEventListener("click", (event) => {
-        //S1: use propagation to ignore bubbling event
+        //S1: use stopPropagation() to ignore bubbling event
         // event.stopPropagation();
         window.location.assign(`/add-edit-post.html?id=${post.id}`)
       })

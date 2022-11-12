@@ -1,37 +1,34 @@
-import postApi from "../services/postApi";
-import { renderPostForm } from "../utils";
+import postApi from '../services/postApi'
+import { initPostForm } from '../utils'
+;(async function () {
+  try {
+    const postDetailTitle = document.getElementById('postDetailTitle')
 
-(async function () {
-    const postDetailTitle = document.getElementById("postDetailTitle");
+    const url = new URL(window.location)
 
-    const url = new URL(window.location);
+    const postId = url.searchParams.get('id')
 
-    const postId = url.searchParams.get("id");
+    postDetailTitle.innerText = postId ? 'Edit the post' : 'Add a post'
 
-    let initialValues = {
-        author: "Kira Schroeder",
-        description: "content 1",
-        imageUrl: "https://picsum.photos/id/214/1368/400",
-        title: "Error amet sit",
-    }
-
-    if (postId) {
-        postDetailTitle.innerText = "Edit the post"
-
-        const post = await postApi.getById(postId)
-
-        initialValues = {
-            ...initialValues,
-            ...post
+    const defaultValues = postId
+      ? await postApi.getById(postId)
+      : {
+          author: '',
+          description: '',
+          imageUrl: '',
+          title: '',
         }
-    } else postDetailTitle.innerText = "Add a post"
 
     const handleSubmitForm = (data) => {
-        console.log(data)
+      console.log(data)
     }
 
-    renderPostForm({
-        initialValues,
-        callback: handleSubmitForm
+    initPostForm({
+      formId: 'postForm',
+      defaultValues,
+      onSubmit: handleSubmitForm,
     })
+  } catch (error) {
+    console.log('failed to fetch post detail', error)
+  }
 })()
