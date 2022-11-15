@@ -12,16 +12,6 @@ export function setFieldValue(form, selector, value) {
   if (field) field.value = value
 } 
 
-export function setFieldValue(form, selector) {
-  if (!form) return;
-
-  const field = form.querySelector(selector)
-
-  if (field) return field.value;
-
-  return "";
-} 
-
 export function setBackgroundImg(parent, selector, imageUrl) {
   if (!parent) return;
 

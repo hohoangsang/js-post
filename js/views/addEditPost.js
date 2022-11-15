@@ -1,5 +1,6 @@
 import postApi from '../services/postApi'
 import { initPostForm } from '../utils'
+
 ;(async function () {
   try {
     const postDetailTitle = document.getElementById('postDetailTitle')
