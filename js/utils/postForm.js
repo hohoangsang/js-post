@@ -1,4 +1,5 @@
 import { setBackgroundImg, setFieldValue, setTextContent } from './common'
+import * as yup from 'yup'
 
 export function initPostForm({ formId, defaultValues, onSubmit }) {
   const form = document.getElementById(formId)
@@ -8,18 +9,18 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   setFormValues(form, defaultValues)
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault()
 
     //get form values
     const formValues = getFormValues(form)
 
-    console.log(formValues)
-
     //validate form values
-    if (!validatePostForm(form, formValues)) return
-    //if valid call onSubmit function
-    //if not valid --> re-typing form
+    const isValid = await validatePostForm(form, formValues)
+    if (!isValid) return
+    
+    //check Is onSubmit function passed into initPostForm function 
+    onSubmit?.(formValues)
   })
 }
 
@@ -51,39 +52,55 @@ function getFormValues(form) {
   return formValues
 }
 
-function validatePostForm(form, formValues) {
-  //create errors
-  const errors = {
-    title: getTitleError(form),
-    // author: getAuthorError(form),
-    //...
-  }
+function getPostSchema() {
+  return yup.object().shape({
+    title: yup.string().required('Please enter title!'),
+    author: yup
+      .string()
+      .required('Please enter author!')
+      .test(
+        'at-least-two-words',
+        'Please enter at least two words',
+        (value) => value.split(' ').filter((word) => word.length >= 3).length >= 2
+      ),
+    description: yup.string(),
+  })
+}
 
-  //set errors
-  for (const key in errors) {
-    const element = form.querySelector(`[name="${key}"]`)
-    element.setCustomValidity(errors[key])
-    setTextContent(element.parentElement, '.invalid-feedback', errors[key])
+function setFieldError(form, name, error) {
+  const element = form.querySelector(`[name="${name}"]`)
+  if (element) {
+    element.setCustomValidity(error)
+    setTextContent(element.parentElement, '.invalid-feedback', error)
+  }
+}
+
+async function validatePostForm(form, formValues) {
+  try {
+    //reset validate message
+    ['title', 'author'].forEach(name => setFieldError(form, name, ''))
+
+    //validate form values
+    const postSchema = getPostSchema()
+    await postSchema.validate(formValues, { abortEarly: false })
+  } catch (error) {
+    if (error.name === 'ValidationError' && Array.isArray(error.errors)) {
+      const validationFlag = {}
+
+      for (const validationError of error.inner) {
+        const name = validationError.path
+        const message = validationError.message
+
+        if (validationFlag[name]) continue;
+
+        setFieldError(form, name, message)
+        validationFlag[name] = true
+      }
+    }
   }
 
   //change class was-validated to form element
   const isValid = form.checkValidity()
   if (!isValid) form.classList.add('was-validated')
   return isValid
-}
-
-function getTitleError(form) {
-  const title = form.querySelector('[name="title"]')
-
-  //check required
-  const isMissing = title.validity.valueMissing
-  if (isMissing) return 'Please enter title!'
-
-  //check at least two words with more than 3 characters
-  const isMatchLenght = Boolean(
-    title.value.split(' ').filter((word) => word.length >= 3).length >= 2
-  )
-  if (!isMatchLenght) return 'Title must have at least 2 words with more then 3 characters!'
-
-  return ''
 }

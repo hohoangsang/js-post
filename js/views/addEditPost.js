@@ -1,6 +1,5 @@
 import postApi from '../services/postApi'
 import { initPostForm } from '../utils'
-
 ;(async function () {
   try {
     const postDetailTitle = document.getElementById('postDetailTitle')
@@ -20,8 +19,18 @@ import { initPostForm } from '../utils'
           title: '',
         }
 
-    const handleSubmitForm = (data) => {
-      console.log(data)
+    const handleSubmitForm = async (formValues) => {
+      console.log('Data submit in parent', formValues)
+      try {
+        const postResult = postId
+          ? await postApi.update({...formValues, id: postId})
+          : await postApi.post(formValues)
+
+        //redirect to detail post
+        window.location.assign(`/post-detail.html?id=${postResult.id}`);
+      } catch (error) {
+        console.log('Failed to add/edit post: ', error)
+      }
     }
 
     initPostForm({
