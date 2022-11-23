@@ -1,5 +1,5 @@
 import postApi from '../services/postApi'
-import { initPostForm } from '../utils'
+import { initPostForm, toast } from '../utils'
 ;(async function () {
   try {
     const postDetailTitle = document.getElementById('postDetailTitle')
@@ -20,16 +20,22 @@ import { initPostForm } from '../utils'
         }
 
     const handleSubmitForm = async (formValues) => {
-      console.log('Data submit in parent', formValues)
+      // console.log('Data submit in parent', formValues)
       try {
         const postResult = postId
-          ? await postApi.update({...formValues, id: postId})
+          ? await postApi.update({ ...formValues, id: postId })
           : await postApi.post(formValues)
 
+        //show toast message
+        toast.success('Save post successfully!')
+
         //redirect to detail post
-        window.location.assign(`/post-detail.html?id=${postResult.id}`);
+        setTimeout(() => {
+          window.location.assign(`/post-detail.html?id=${postResult.id}`)
+        }, 2000)
       } catch (error) {
         console.log('Failed to add/edit post: ', error)
+        toast.error(`Error ${error}`)
       }
     }
 

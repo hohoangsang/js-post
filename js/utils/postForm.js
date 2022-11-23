@@ -9,8 +9,16 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   setFormValues(form, defaultValues)
 
+  let isSubmiting = false
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
+
+    if (isSubmiting) return;
+
+    //disable submit button
+    showLoading(form)
+    isSubmiting = true
 
     //get form values
     const formValues = getFormValues(form)
@@ -20,8 +28,29 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
     if (!isValid) return
     
     //check Is onSubmit function passed into initPostForm function 
-    onSubmit?.(formValues)
+    await onSubmit?.(formValues)
+
+    //enable submit button
+    hideLoading(form)
+
+    isSubmiting = false
   })
+}
+
+function showLoading(form) {
+  const button = form.querySelector('[name="submit"]')
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = `<i class="fas fa-save mr-1"></i> Saving`
+  }
+}
+
+function hideLoading(form) {
+  const button = form.querySelector('[name="submit"]')
+  if (button) {
+    button.disabled = false;
+    button.innerHTML = `<i class="fas fa-save mr-1"></i> Save`
+  }
 }
 
 function setFormValues(form, formValues) {
