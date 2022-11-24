@@ -19,3 +19,7 @@ export function setBackgroundImg(parent, selector, imageUrl) {
 
   if (selection) selection.style.backgroundImage = `url("${imageUrl}")`
 }
+
+export function randomNumber(range) {
+  return Math.round(Math.random() * range)
+}

@@ -1,4 +1,4 @@
-import { setBackgroundImg, setFieldValue, setTextContent } from './common'
+import { randomNumber, setBackgroundImg, setFieldValue, setTextContent } from './common'
 import * as yup from 'yup'
 
 export function initPostForm({ formId, defaultValues, onSubmit }) {
@@ -9,12 +9,15 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   setFormValues(form, defaultValues)
 
+  //init event
+  initRandomImage(form)
+
   let isSubmiting = false
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
 
-    if (isSubmiting) return;
+    if (isSubmiting) return
 
     //disable submit button
     showLoading(form)
@@ -23,24 +26,36 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
     //get form values
     const formValues = getFormValues(form)
 
+    console.log(formValues)
+
     //validate form values
     const isValid = await validatePostForm(form, formValues)
-    if (!isValid) return
+    if (isValid) return await onSubmit?.(formValues)
     
-    //check Is onSubmit function passed into initPostForm function 
-    await onSubmit?.(formValues)
-
     //enable submit button
     hideLoading(form)
-
     isSubmiting = false
+  })
+}
+
+function initRandomImage(form) {
+  const randomButton = form.querySelector('#postChangeImage')
+  if (!randomButton) return
+
+  randomButton.addEventListener('click', () => {
+    //Random number id of image
+    //Set new URL Image
+    const imageUrl = `https://picsum.photos/id/${randomNumber(1000)}/1368/400`
+    //Set background image
+    setFieldValue(form, '[name="imageUrl"]', imageUrl) //hidden field
+    setBackgroundImg(document, '#postHeroImage', imageUrl)
   })
 }
 
 function showLoading(form) {
   const button = form.querySelector('[name="submit"]')
   if (button) {
-    button.disabled = true;
+    button.disabled = true
     button.innerHTML = `<i class="fas fa-save mr-1"></i> Saving`
   }
 }
@@ -48,7 +63,7 @@ function showLoading(form) {
 function hideLoading(form) {
   const button = form.querySelector('[name="submit"]')
   if (button) {
-    button.disabled = false;
+    button.disabled = false
     button.innerHTML = `<i class="fas fa-save mr-1"></i> Save`
   }
 }
@@ -93,6 +108,7 @@ function getPostSchema() {
         (value) => value.split(' ').filter((word) => word.length >= 3).length >= 2
       ),
     description: yup.string(),
+    imageUrl: yup.string().required('Please enter image url').url('Please enter valid url'),
   })
 }
 
@@ -107,7 +123,7 @@ function setFieldError(form, name, error) {
 async function validatePostForm(form, formValues) {
   try {
     //reset validate message
-    ['title', 'author'].forEach(name => setFieldError(form, name, ''))
+    ;['title', 'author', 'imageUrl'].forEach((name) => setFieldError(form, name, ''))
 
     //validate form values
     const postSchema = getPostSchema()
@@ -120,7 +136,7 @@ async function validatePostForm(form, formValues) {
         const name = validationError.path
         const message = validationError.message
 
-        if (validationFlag[name]) continue;
+        if (validationFlag[name]) continue
 
         setFieldError(form, name, message)
         validationFlag[name] = true

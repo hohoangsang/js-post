@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+:root {
+  --primary-color: #dc1b1b;
+  --headerHeight: 73px
+}
+
 body {
   /* Make footer always at bottom of our screen */
   display: flex;
@@ -11,14 +16,20 @@ body {
   min-height: 100vh;
 
   font-family: "Rubik", sans-serif;
+  position: relative;
 }
 
 body > main {
   flex: 1  1 auto;
+  margin-top: var(--headerHeight);
 }
 
-:root {
-  --primary-color: #dc1b1b;
+body > header {
+  height: var(--headerHeight);
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 10;
+  background-color: white;
 }
 
 /* Override link style */

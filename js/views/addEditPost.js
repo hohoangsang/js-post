@@ -30,9 +30,8 @@ import { initPostForm, toast } from '../utils'
         toast.success('Save post successfully!')
 
         //redirect to detail post
-        setTimeout(() => {
-          window.location.assign(`/post-detail.html?id=${postResult.id}`)
-        }, 2000)
+
+        window.location.assign(`/post-detail.html?id=${postResult.id}`)
       } catch (error) {
         console.log('Failed to add/edit post: ', error)
         toast.error(`Error ${error}`)
