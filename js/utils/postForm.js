@@ -9,8 +9,13 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   setFormValues(form, defaultValues)
 
+  //init image source
+  initImageSource(form)
+
   //init event
   initRandomImage(form)
+
+  initUploadImage(form)
 
   let isSubmiting = false
 
@@ -35,6 +40,36 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
     //enable submit button
     hideLoading(form)
     isSubmiting = false
+  })
+}
+
+function initUploadImage(form) {
+  const imageUpload = form.querySelector('[name="image"]')
+
+  if (!imageUpload) return;
+
+  imageUpload.addEventListener("change", event => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageURL = URL.createObjectURL(file)
+      setBackgroundImg(document, '#postHeroImage', imageURL)
+    }
+  })
+}
+
+function initImageSource(form) {
+  const radioList = form.querySelectorAll('[name="imageSource"]')
+  radioList.forEach(inputRadio => {
+    inputRadio.addEventListener("change", (event) => {
+      handleImageSourceControl(form, event.target.value)
+    })
+  })
+}
+
+function handleImageSourceControl(form, selectedValue) {
+  const controlList = form.querySelectorAll('[data-id="image-source"]');
+  controlList.forEach(control => {
+    control.hidden = control.dataset.imageSource !== selectedValue
   })
 }
 
