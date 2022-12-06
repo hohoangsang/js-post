@@ -1,5 +1,33 @@
 import postApi from '../services/postApi'
-import { initPostForm, toast } from '../utils'
+import { initPostForm, toast, imageSource } from '../utils'
+
+function removeUnNeededField(formValues) {
+  const payload = {...formValues}
+
+  if (formValues.imageSource === imageSource.PICSUM) {
+    delete payload.image
+  } else {
+    delete payload.imageUrl
+  }
+
+  delete payload.imageSource
+  
+  //remove id field if is add mode
+  if (!formValues.id) delete payload.id
+
+  return payload
+}
+
+function jsonToFormData(jsonObject) {
+  const formData = new FormData();
+
+  for (const key in jsonObject) {
+    formData.set(key, jsonObject[key])
+  }
+
+  return formData
+}
+
 ;(async function () {
   try {
     const postDetailTitle = document.getElementById('postDetailTitle')
@@ -20,11 +48,15 @@ import { initPostForm, toast } from '../utils'
         }
 
     const handleSubmitForm = async (formValues) => {
-      // console.log('Data submit in parent', formValues)
       try {
+        const payload = removeUnNeededField(formValues)
+        const formData = jsonToFormData(payload)
+
+        if (postId) formData.set("id", postId)
+
         const postResult = postId
-          ? await postApi.update({ ...formValues, id: postId })
-          : await postApi.post(formValues)
+          ? await postApi.updateFormData(formData)
+          : await postApi.postFormData(formData)
 
         //show toast message
         toast.success('Save post successfully!')
