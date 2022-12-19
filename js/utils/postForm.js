@@ -18,6 +18,8 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   initUploadImage(form)
 
+  initValidationOnchange(form)
+
   let isSubmiting = false
 
   form.addEventListener('submit', async (event) => {
@@ -53,6 +55,12 @@ function initUploadImage(form) {
       const imageURL = URL.createObjectURL(file)
       setBackgroundImg(document, '#postHeroImage', imageURL)
     }
+
+    validatePostField(
+      form, 
+      { imageSource: imageSource.UPLOAD, image: file }, 
+      'image'
+    )
   })
 }
 
@@ -148,20 +156,20 @@ function getPostSchema() {
       .oneOf([imageSource.UPLOAD, imageSource.PICSUM], 'Please enter valid image source!'),
     imageUrl: yup.string().when('imageSource', {
       is: imageSource.PICSUM,
-      then: yup.string().required('Please enter image url!').url('Please enter valid url!')
+      then: yup.string().required('Please enter image url!').url('Please enter valid url!'),
     }),
     image: yup.mixed().when('imageSource', {
       is: imageSource.UPLOAD,
       then: yup
         .mixed()
-        .test("required", "Please upload image!", (file) => Boolean(file.name))
-        .test("max-sizes", "Image too large(max 3mb)!", (file) => {
-          const fileSize = file.size;
+        .test('required', 'Please upload image!', (file) => Boolean(file.name))
+        .test('max-sizes', 'Image too large(max 3mb)!', (file) => {
+          const fileSize = file.size
           const MAX_SIZE = 3 * 1024 * 1024 //3mb
           // const MAX_SIZE = 3 * 1024//3kb
           return fileSize <= MAX_SIZE
-        })  
-    })
+        }),
+    }),
   })
 }
 
@@ -201,4 +209,31 @@ async function validatePostForm(form, formValues) {
   const isValid = form.checkValidity()
   if (!isValid) form.classList.add('was-validated')
   return isValid
+}
+
+async function validatePostField(form, formValues, name) {
+  try {
+    //reset field error
+    setFieldError(form, name, '')
+    const postSchema = getPostSchema()
+    await postSchema.validateAt(name, formValues)
+  } catch (error) {
+    //set error message
+    setFieldError(form, name, error.message)
+  }
+
+  const field = form.querySelector(`[name="${name}"]`)
+  if (field && !field.checkValidity()) {
+    field.parentElement.classList.add('was-validated')
+  }
+}
+
+function initValidationOnchange(form) {
+  ;['title', 'author'].forEach((name) => {
+    const field = form.querySelector(`[name="${name}"]`)
+    field.addEventListener('change', (event) => {
+      const newValue = event.target.value
+      validatePostField(form, { [name]: newValue }, name)
+    })
+  })
 }

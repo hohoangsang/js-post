@@ -4,18 +4,19 @@ import {
   basePage, initPagination,
   initSearch,
   renderPagination,
-  renderPostList
+  renderPostList,
+  toast
 } from '../utils'
 
 async function handleFilterChange(filterObj) {
-  if (!filterObj) return
-
   try {
     const url = new URL(window.location)
 
-    Object.keys(filterObj).forEach((filterName) =>
-      url.searchParams.set(filterName, filterObj[filterName])
-    )
+    if (filterObj && Object.keys(filterObj).length) {
+      Object.keys(filterObj).forEach((filterName) =>
+        url.searchParams.set(filterName, filterObj[filterName])
+      )
+    }
 
     history.pushState({}, '', url)
 
@@ -29,6 +30,24 @@ async function handleFilterChange(filterObj) {
   } catch (error) {
     console.log('fail to render post list', error)
   }
+}
+
+function registerPostRemove() {
+  document.addEventListener('post-delete', async (event) => {
+    try {
+      const post = event.detail
+      const message = `Are you sure to remove post: "${post.title}"`
+
+      if (window.confirm(message)) {
+        await postApi.delete(post.id)
+
+        handleFilterChange()
+      } 
+    } catch (error) {
+     console.log("Failed to remove post ", error) 
+     toast.error(error.message)
+    }
+  })
 }
 
 ;(async () => {
@@ -57,6 +76,8 @@ async function handleFilterChange(filterObj) {
           _page: 1,
         }),
     })
+
+    registerPostRemove()
 
     const { data, pagination } = await postApi.getAll(queryParams)
     renderPostList('postList', data)

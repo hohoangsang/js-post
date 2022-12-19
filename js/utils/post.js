@@ -39,6 +39,21 @@ export function renderPostList(elementId, postList) {
     }
     // register event redirect to edit post page -- end
 
+    // register event remove page -- start
+    const removeButton = liElement.querySelector('[data-id="remove"]')
+    
+    if (removeButton) {
+      removeButton.addEventListener("click", () => {
+        const removeEvent = new CustomEvent("post-delete", {
+          bubbles: true,
+          detail: post
+        })
+
+        removeButton.dispatchEvent(removeEvent)
+      })
+    }
+    // register event remove page -- end
+
     ulElement.appendChild(liElement)
   })
 }
