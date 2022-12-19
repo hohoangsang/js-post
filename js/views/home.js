@@ -40,8 +40,9 @@ function registerPostRemove() {
 
       if (window.confirm(message)) {
         await postApi.delete(post.id)
+        await handleFilterChange()
 
-        handleFilterChange()
+        toast.success('Remove post successfully')
       } 
     } catch (error) {
      console.log("Failed to remove post ", error) 
